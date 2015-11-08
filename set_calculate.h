@@ -1,51 +1,51 @@
 #pragma once
 #include "type_tool.h"
-
+#include "template_depute.h"
 namespace PO{
     namespace Tool{
 
-		template <typename ...AT> struct type_set {};
-
-		template <typename T> struct is_type_set :std::false_type {};
-		template <typename ...T, template <typename...> class tank> struct is_type_set<tank<T...>> :std::true_type{};
-
-		template <typename T, typename K > struct append_type_set {
-			static_assert(is_type_set<T>::value, "append_type_set only recive type_set");
-		};
-
-		template <typename ...T, template<typename ...> class tank, typename K > struct append_type_set<tank<T...>, K> {
-			typedef tank<T..., K> type;
-		};
-
 		template <typename T, typename P> struct is_subset {
-			static_assert(is_type_set<T>::value && is_type_set<P>::value, "is_subset only receive type_set.");
+			static_assert(is_depute_<T>::value && is_depute_<P>::value, "is_subset only receive depute_.");
 		};
 
-		template <typename ...AT, typename ...P, template<typename ...> class tank1, template<typename ...> class tank2 >
-		struct is_subset <tank1<AT...>, tank2<P...>> {
+		template < typename ...AT, typename ...P >
+		struct is_subset <is_depute_<AT...>, is_depute_<P...>> {
 			static constexpr bool value = value_and<true, !is_one_of<AT, P...>::value...>::value;
 		};
 
 		template<typename T, typename K> struct is_same_set {
-			static_assert(is_type_set<T>::value && is_type_set<K>::value, "is_same_set only recive type_set.");
+			static_assert(is_depute_<T>::value && is_depute_<K>::value, "is_same_set only recive depute_.");
 			static constexpr bool value = is_subset<T, K>::value && is_subset<K, T>::value;
 		};
 
 		template<typename T, typename P> struct is_porper_subset
 		{
-			static_assert(is_type_set<T>::value && is_type_set<P>::value, "is_porper_subset only receive type_set.");
+			static_assert(is_depute_<T>::value && is_depute_<P>::value, "is_porper_subset only receive depute_.");
 			static constexpr bool value = is_subset<T, P>::value && !is_subset<P, T>::value;
 		};
 
-		template<typename T, typename K> struct is_inside_set :is_subset<type_set<T>,K>{};
+		template<typename T,typename P> class union_set{
+			static_assert(is_depute_<T>::value && is_depute_<P>::value ,"union_set only recive depute_");
+		};
+		template<typename ...T , typename ...K>
+		class union_set<depute_<T...>, depute_<K...>> {
+			struct mark {};
+		public:
+			typedef typename remove<mark,depute_, typename std::conditional<!is_one_of<T, K...>::value, T, mark>::type..., K...>::type type;
+		};
 
-		template<typename T,typename P> struct union_set{
-			static_assert( is_type_set<T>::value && is_type_set<P>::value ,"union_set only recive type_set");
+		template<typename T, typename P> class union_set_index {
+			static_assert(is_depute_<T>::value && is_depute_<P>::value, "union_set_index only recive type_set");
 		};
-		template<typename ...T , template<typename...> class tank, typename ...K,template <typename...> class tank2>
-		struct union_set<tank<T...>,tank2<K...>> {
-			typedef typename filter<tank, typename std::conditional<!is_one_of<T, K...>::value, T, control_::empty_>::type..., K...>::type type;
+
+		template<typename ...T,  typename ...K>
+		class union_set_index<depute_<T...>, depute_<K...>> {
+			struct mark {};
+		public:
+			typedef typename locate<mark, typename std::conditional<is_one_of<T, K...>::value, T, mark>::type..., K...>::type type;
 		};
+
+		//template<typename ...T, template 
 
 		/*template<typename T,typename K> struct able_for_set_calculate { 
 			static constexpr bool value = (is_integer_squence<T>::value &&is_integer_squence<K>::value )||( is_type_set<K>::value&&is_type_set<T>::value );

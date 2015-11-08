@@ -1,6 +1,5 @@
 #pragma once
-#include <iostream>
-using namespace std;
+#include <functional>
 namespace PO {
 	namespace Tool {
 
@@ -74,7 +73,7 @@ namespace PO {
 				iterator& operator ++ () {
 					while (current_iterator != end_iterator) {
 						++current_iterator;
-						if (role_for_tank.is_avalible(*current_iterator))
+						if ( !(current_iterator != end_iterator) || role_for_tank.is_avalible(*current_iterator))
 							break;
 					}
 					return *this;
@@ -89,7 +88,6 @@ namespace PO {
 				
 
 				bool operator != (const iterator& it) const { return current_iterator != it.current_iterator; }
-
 				decltype(auto) operator*() { return role_for_tank(*current_iterator); }
 
 				iterator(const iterator& it) :current_iterator(it.current_iterator), end_iterator(it.end_iterator) ,role_for_tank(it.role_for_tank){}
